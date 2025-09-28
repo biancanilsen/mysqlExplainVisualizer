@@ -15,12 +15,13 @@ export default function InputColumn({ input, setInput, analyze, alerts, selected
     <div className="col-span-12 lg:col-span-3 flex flex-col min-h-0">
       <Card className="h-full flex flex-col border border-gray-700">
         <CardHeader className="pb-2 flex-shrink-0">
-          <span className="font-medium text-gray-200">EXPLAIN FORMAT=JSON</span>
+          <span className="font-semibold">Análise EXPLAIN</span>
         </CardHeader>
         <CardBody className="flex-1 flex flex-col gap-3 min-h-0">
           <div className="flex-1 flex flex-col gap-3 min-h-0">
             <Textarea
-              placeholder="Cole aqui o JSON..."
+              label="EXPLAIN FORMAT=JSON"
+              placeholder="Cole aqui o EXPLAIN ANALISE JSON..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="flex-1"
@@ -29,11 +30,11 @@ export default function InputColumn({ input, setInput, analyze, alerts, selected
             <div className="flex-shrink-0">
             <div className="flex items-center gap-2">
                 {/* MUDANÇA AQUI: Adicionamos a classe flex-1 */}
-                <Button color="primary" onPress={analyze} size="md" className="flex-1">
+                <Button color="primary" onPress={analyze} size="md" className="flex-1 mb-2">
                 Analisar
                 </Button>
             </div>
-                <span className="text-sm text-gray-500">Clique em um nó para ver detalhes.</span>
+                <span className="text-sm text-gray-500">Clique em um nó do plano de execução para ver detalhes.</span>
             </div>
           </div>
           <div className="flex-1 flex flex-col min-h-0">
