@@ -178,7 +178,8 @@ export default function ExplainVisualizer() {
     <div className="dark text-foreground bg-background h-screen flex flex-col overflow-hidden">
       
       <div className="flex-shrink-0 p-4 border-b border-gray-700">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+        {/* A MUDANÇA AQUI DENTRO: removi o max-w-7xl e o mx-auto do header também para consistência */}
+        <div className="flex items-center justify-between w-full mx-auto">
           <h1 className="text-2xl font-bold">MySQL Explain Visualizer</h1>
           <div className="text-sm text-gray-300">
             Custo total estimado: <span className="font-mono">{totalCost.toFixed(2)}</span>
@@ -187,11 +188,15 @@ export default function ExplainVisualizer() {
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="grid grid-cols-12 gap-4 p-4 max-w-7xl mx-auto w-full h-full">
+        {/*
+          ================================================================
+          == MUDANÇA PRINCIPAL AQUI ==
+          Removemos 'max-w-7xl' e 'mx-auto' para que o grid ocupe a largura total.
+          ================================================================
+        */}
+        <div className="grid grid-cols-12 gap-4 p-4 w-full h-full">
 
-          {/* ================================================================ */}
-          {/* == PAINEL ESQUERDO: A MUDANÇA ESTÁ AQUI DENTRO == */}
-          {/* ================================================================ */}
+          {/* Painel Esquerdo: JSON Input */}
           <div className="col-span-12 lg:col-span-3 flex flex-col min-h-0">
             <Card className="h-full flex flex-col border border-gray-700">
               <CardHeader className="pb-2 flex-shrink-0">
@@ -199,17 +204,13 @@ export default function ExplainVisualizer() {
                   EXPLAIN FORMAT=JSON
                 </span>
               </CardHeader>
-              
-              {/* O CardBody agora tem dois filhos diretos para a divisão 50/50 */}
               <CardBody className="flex-1 flex flex-col gap-3 min-h-0">
-                
-                {/* Metade Superior: Textarea */}
                 <div className="h-1/2 flex flex-col gap-3">
                   <Textarea
                     placeholder="Cole aqui o JSON..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    className="flex-1" // Ocupa todo o espaço da metade superior
+                    className="flex-1"
                     classNames={{
                       input: "h-full resize-none",
                       inputWrapper: "h-full"
@@ -226,20 +227,16 @@ export default function ExplainVisualizer() {
                     </div>
                   </div>
                 </div>
-                
-                {/* Metade Inferior: Painel de Análise */}
                 <div className="h-1/2 flex flex-col min-h-0">
-                  {/* Adicionamos o ScrollShadow aqui para a rolagem interna da análise */}
                   <ScrollShadow className="flex-1 w-full">
                     <AnalysisPanel alerts={alerts} selectedId={selectedId} variant="bare" />
                   </ScrollShadow>
                 </div>
-
               </CardBody>
             </Card>
           </div>
 
-          {/* Painel Central: Diagrama (Sem alterações) */}
+          {/* Painel Central: Diagrama */}
           <div className="col-span-12 lg:col-span-6 flex flex-col min-h-0">
             <Card className="h-full flex flex-col border border-gray-700">
               <CardHeader className="pb-2 flex-shrink-0">
@@ -253,7 +250,7 @@ export default function ExplainVisualizer() {
             </Card>
           </div>
 
-          {/* Painel Direito: Detalhes (Sem alterações) */}
+          {/* Painel Direito: Detalhes */}
           <div className="col-span-12 lg:col-span-3 flex flex-col min-h-0">
             <Card className="h-full flex flex-col border border-gray-700">
               <CardHeader className="pb-2 flex-shrink-0">
