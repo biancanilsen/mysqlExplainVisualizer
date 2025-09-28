@@ -175,78 +175,98 @@ export default function ExplainVisualizer() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
+    <div className="dark text-foreground bg-background h-screen flex flex-col overflow-hidden">
+      
+      <div className="flex-shrink-0 p-4 border-b border-gray-700">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <h1 className="text-2xl font-bold">MySQL Explain Visualizer</h1>
-          <div className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="text-sm text-gray-300">
             Custo total estimado: <span className="font-mono">{totalCost.toFixed(2)}</span>
           </div>
         </div>
       </div>
 
-      {/* Main Content - Grid Layout */}
-      <div className="flex-1 grid grid-cols-12 gap-4 p-4 max-w-7xl mx-auto w-full min-h-0">
-        {/* Left panel: JSON Input */}
-        <div className="col-span-12 lg:col-span-3 flex flex-col min-h-0">
-          <Card shadow="sm" radius="sm" className="border border-gray-200 dark:border-gray-700 h-full flex flex-col">
-            <CardHeader className="pb-0 flex-shrink-0">
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Cole aqui o JSON do EXPLAIN FORMAT=JSON
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="grid grid-cols-12 gap-4 p-4 max-w-7xl mx-auto w-full h-full">
+
+          {/* ================================================================ */}
+          {/* == PAINEL ESQUERDO: A MUDANÇA ESTÁ AQUI DENTRO == */}
+          {/* ================================================================ */}
+          <div className="col-span-12 lg:col-span-3 flex flex-col min-h-0">
+            <Card className="h-full flex flex-col border border-gray-700">
+              <CardHeader className="pb-2 flex-shrink-0">
+                <span className="font-medium text-gray-200">
+                  EXPLAIN FORMAT=JSON
                 </span>
-              </div>
-            </CardHeader>
-            <CardBody className="flex-1 flex flex-col space-y-3 min-h-0">
-              <div className="flex-1 min-h-0">
-                <Textarea
-                  label="JSON do EXPLAIN"
-                  placeholder="Cole aqui o JSON do EXPLAIN FORMAT=JSON"
-                  variant="bordered"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  className="h-full"
-                  classNames={{
-                    input: "h-full resize-none",
-                    inputWrapper: "h-full"
-                  }}
-                />
-              </div>
-              <div className="flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <Button color="primary" onPress={analyze} size="sm">
-                    Analisar
-                  </Button>
-                  <span className="text-xs text-gray-500">
-                    Dica: O diagrama é interativo — clique em um nó para ver os detalhes.
-                  </span>
+              </CardHeader>
+              
+              {/* O CardBody agora tem dois filhos diretos para a divisão 50/50 */}
+              <CardBody className="flex-1 flex flex-col gap-3 min-h-0">
+                
+                {/* Metade Superior: Textarea */}
+                <div className="h-1/2 flex flex-col gap-3">
+                  <Textarea
+                    placeholder="Cole aqui o JSON..."
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    className="flex-1" // Ocupa todo o espaço da metade superior
+                    classNames={{
+                      input: "h-full resize-none",
+                      inputWrapper: "h-full"
+                    }}
+                  />
+                  <div className="flex-shrink-0">
+                    <div className="flex items-center gap-2">
+                      <Button color="primary" onPress={analyze} size="sm">
+                        Analisar
+                      </Button>
+                      <span className="text-xs text-gray-500">
+                        Clique em um nó para ver detalhes.
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1 min-h-0">
-                <AnalysisPanel alerts={alerts} selectedId={selectedId} variant="bare" />
-              </div>
-            </CardBody>
-          </Card>
-        </div>
+                
+                {/* Metade Inferior: Painel de Análise */}
+                <div className="h-1/2 flex flex-col min-h-0">
+                  {/* Adicionamos o ScrollShadow aqui para a rolagem interna da análise */}
+                  <ScrollShadow className="flex-1 w-full">
+                    <AnalysisPanel alerts={alerts} selectedId={selectedId} variant="bare" />
+                  </ScrollShadow>
+                </div>
 
-        {/* Center panel: Diagram */}
-        <div className="col-span-12 lg:col-span-6 flex flex-col min-h-0">
-          <Card shadow="sm" radius="sm" className="border border-gray-200 dark:border-gray-700 h-full flex flex-col">
-            <CardHeader className="pb-0 flex-shrink-0">
-              <div className="font-semibold">Plano de Execução (Diagrama)</div>
-            </CardHeader>
-            <CardBody className="flex-1 min-h-0">
-              <ScrollShadow className="h-full">
-                <div ref={containerRef} className="mermaid-container" />
-              </ScrollShadow>
-            </CardBody>
-          </Card>
-        </div>
+              </CardBody>
+            </Card>
+          </div>
 
-        {/* Right panel: Details */}
-        <div className="col-span-12 lg:col-span-3 flex flex-col min-h-0">
-          <DetailsPanel node={selectedNode} />
+          {/* Painel Central: Diagrama (Sem alterações) */}
+          <div className="col-span-12 lg:col-span-6 flex flex-col min-h-0">
+            <Card className="h-full flex flex-col border border-gray-700">
+              <CardHeader className="pb-2 flex-shrink-0">
+                <div className="font-semibold">Plano de Execução</div>
+              </CardHeader>
+              <CardBody className="flex-1 min-h-0">
+                <ScrollShadow className="h-full w-full">
+                  <div ref={containerRef} className="mermaid-container" />
+                </ScrollShadow>
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* Painel Direito: Detalhes (Sem alterações) */}
+          <div className="col-span-12 lg:col-span-3 flex flex-col min-h-0">
+            <Card className="h-full flex flex-col border border-gray-700">
+              <CardHeader className="pb-2 flex-shrink-0">
+                <div className="font-semibold">Detalhes do Nó</div>
+              </CardHeader>
+              <CardBody className="flex-1 min-h-0">
+                <ScrollShadow className="h-full w-full">
+                  <DetailsPanel node={selectedNode} />
+                </ScrollShadow>
+              </CardBody>
+            </Card>
+          </div>
+
         </div>
       </div>
     </div>
