@@ -29,7 +29,6 @@ export default function InputColumn({ input, setInput, analyze, alerts, selected
             />
             <div className="flex-shrink-0">
             <div className="flex items-center gap-2">
-                {/* MUDANÇA AQUI: Adicionamos a classe flex-1 */}
                 <Button color="primary" onPress={analyze} size="md" className="flex-1 mb-2">
                 Analisar
                 </Button>
