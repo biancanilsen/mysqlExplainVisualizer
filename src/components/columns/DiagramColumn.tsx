@@ -41,7 +41,7 @@ export default function DiagramColumn({ graphDef, nodes }: DiagramColumnProps) {
         </CardHeader>
         <CardBody className="flex-1 min-h-0">
           <ScrollShadow className="h-full w-full">
-            <div ref={containerRef} className="mermaid-container" />
+            <div ref={containerRef} className="mermaid-container flex justify-center" />
           </ScrollShadow>
         </CardBody>
       </Card>
