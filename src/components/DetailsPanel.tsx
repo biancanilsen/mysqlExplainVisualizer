@@ -59,9 +59,6 @@ export default function DetailsPanel({ node }: { node?: ExecNode | null }) {
 
             <div className="flex-1">
               <div className="text-xs font-semibold mb-1">JSON Bruto</div>
-              {/* <pre className="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded overflow-auto h-32">
-{JSON.stringify(node.raw, null, 2)}
-              </pre> */}
               <Textarea
                   label="JSON Bruto"
                   placeholder=""
