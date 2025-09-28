@@ -4,13 +4,10 @@ import { parseExplainToTree } from '../lib/explain/normalize';
 import { generateAlerts } from '../lib/explain/heuristics';
 import { buildMermaid } from '../lib/mermaid/buildGraph';
 import type { Alert, ExecNode, ExplainJSON } from '../lib/explain/types';
-
-const SAMPLE_JSON = `{
-  "query_block": { /* ... seu JSON de exemplo aqui ... */ }
-}`;
+import { jsonExample } from '../utils/jsonExemple';
 
 export function useExplainAnalysis() {
-  const [input, setInput] = useState(SAMPLE_JSON);
+  const [input, setInput] = useState(JSON.stringify(jsonExample, null, 2));
   const [graphDef, setGraphDef] = useState<string | null>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [nodes, setNodes] = useState<ExecNode[]>([]);

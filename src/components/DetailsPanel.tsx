@@ -62,13 +62,13 @@ export default function DetailsPanel({ node }: { node?: ExecNode | null }) {
               <Textarea
                   label="JSON Bruto"
                   placeholder=""
-                  variant="bordered"
                   value={JSON.stringify(node.raw, null, 2)}
                   className="h-full"
                   classNames={{
                     input: "h-full resize-none",
                     inputWrapper: "h-full"
                   }}
+                  maxRows={30}
                 />
             </div>
           </div>

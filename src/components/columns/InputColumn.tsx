@@ -26,6 +26,7 @@ export default function InputColumn({ input, setInput, analyze, alerts, selected
               onChange={(e) => setInput(e.target.value)}
               className="flex-1"
               classNames={{ input: "h-full resize-none", inputWrapper: "h-full" }}
+              maxRows={15}
             />
             <div className="flex-shrink-0">
             <div className="flex items-center gap-2">
