@@ -84,45 +84,73 @@ Este documento descreve como o projeto processa e analisa a saída do MySQL `EXP
 
 ### 4. Heurísticas e Regras de Sugestão (generateAlerts)
 
-- Implementação: [ts.generateAlerts()](src/lib/explain/heuristics.ts:4)
+- Implementação: [ts.generateAlerts()](src/lib/explain/heuristics.ts:1)
 - Retorna: `Alert[]` com tipo, código, mensagem, severidade e `nodeId` (quando aplicável).
-- Regras atuais:
+- As regras abaixo foram alinhadas aos conceitos oficiais do MySQL 8.4 (EXPLAIN / access_type, Extra flags e métricas como `filtered`).
 
-1) FULL TABLE SCAN
+1) FULL TABLE SCAN — access_type = ALL
 - Condição: `accessType === 'ALL'` e `rowsExamined > 5000`.
 - Severidade: `high`.
 - Código: `FULL_TABLE_SCAN`.
-- Mensagem: sugere criação de índices nas colunas usadas em `WHERE`/`JOIN`.
-- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts:7)
+- Mensagem: leitura completa da tabela. A doc define `ALL` como varredura total; recomenda-se criar/ajustar índices para predicados de `WHERE`/`JOIN` com maior seletividade.
+- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts)
 
-2) FILE SORT
-- Condição: `raw.using_filesort === true`.
+2) FULL INDEX SCAN — access_type = index
+- Condição: `accessType === 'INDEX'` e `rowsExamined > 5000`.
+- Severidade: `medium`.
+- Código: `FULL_INDEX_SCAN`.
+- Mensagem: varredura completa do índice; avalie predicados mais seletivos e a ordem das colunas em índices compostos.
+- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts)
+
+3) LOW SELECTIVITY — filtered baixo
+- Condição: `filtered` presente e < 10%.
+- Severidade: `medium`.
+- Código: `LOW_SELECTIVITY`.
+- Mensagem: baixa seletividade estimada; muitas linhas lidas são descartadas. Otimize predicados e índices.
+- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts)
+
+4) FILE SORT — Extra: Using filesort
+- Condição: `using_filesort === true`.
 - Severidade: `medium`.
 - Código: `FILE_SORT`.
-- Mensagem: sugere cobrir `ORDER BY` com índice para evitar sort em disco.
-- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts:24)
+- Mensagem: operação de ordenação em disco; prefira cobrir a cláusula `ORDER BY` com índice.
+- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts)
 
-3) TEMPORARY TABLE
-- Condição: `raw.using_temporary_table === true`.
+5) TEMPORARY TABLE — Extra: Using temporary
+- Condição: `using_temporary_table === true`.
 - Severidade: `medium`.
 - Código: `TEMP_TABLE`.
-- Mensagem: indica criação de tabela temporária (padrão em `GROUP BY`/`UNION`); avaliar índices/disegno.
-- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts:40)
+- Mensagem: materialização em tabela temporária; comum em `GROUP BY`/`UNION`. Revise índices e reescritas para reduzir materializações.
+- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts)
 
-4) UNUSED INDEX
-- Condição: existem `possible_keys`, mas `key` escolhido está ausente (`undefined`/`null`).
+6) JOIN BUFFER — Extra: Using join buffer
+- Condição: `using_join_buffer` presente (string/true).
+- Severidade: `medium`.
+- Código: `JOIN_BUFFER`.
+- Mensagem: uso de join buffer (BNL/BKA/Hash Join) indica ausência de índice efetivo para a junção; crie/ajuste índices nas colunas de JOIN e reavalie a ordem das junções.
+- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts)
+
+7) COVERING INDEX — Extra: Using index
+- Condição: `using_index === true`.
+- Severidade: `low` (informativo).
+- Código: `COVERING_INDEX`.
+- Mensagem: plano atendido apenas pelo índice (covering), reduzindo I/O em tabela.
+- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts)
+
+8) UNUSED INDEX — possible_keys presentes, key não escolhido
+- Condição: `possible_keys` não vazio e `key` ausente.
 - Severidade: `low`.
 - Código: `UNUSED_INDEX`.
-- Mensagem: pode haver uso impedido de índices por funções nas colunas (`LOWER(col)`, casts, etc.).
-- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts:56)
+- Mensagem: índices candidatos não utilizados; verifique funções nas colunas, tipos/colations, estatísticas e ordem de colunas.
+- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts)
 
-5) BOTTLENECK
+9) BOTTLENECK — nó(s) com maior custo relativo
 - Cálculo: `maxCost = max(n.cost)`, `denom = totalCost || maxCost || 1`.
 - Condição: nós com `cost === maxCost` e `maxCost > 0`.
-- Severidade: `high` (tipo `INFORMATIVO`).
+- Severidade: `high` (informativo).
 - Código: `BOTTLENECK`.
-- Mensagem: identifica o principal gargalo com percentual do custo total.
-- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts:75)
+- Mensagem: identifica o principal gargalo com percentual do custo total do plano.
+- Trecho: [src/lib/explain/heuristics.ts](src/lib/explain/heuristics.ts)
 
 ### 5. Interface e Interação
 

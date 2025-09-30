@@ -58,8 +58,12 @@ export interface ExecNode {
 export type AlertType = 'ALERTA' | 'INFORMATIVO'
 export type AlertCode =
   | 'FULL_TABLE_SCAN'
+  | 'FULL_INDEX_SCAN'
+  | 'LOW_SELECTIVITY'
   | 'FILE_SORT'
   | 'TEMP_TABLE'
+  | 'JOIN_BUFFER'
+  | 'COVERING_INDEX'
   | 'UNUSED_INDEX'
   | 'BOTTLENECK'
 
