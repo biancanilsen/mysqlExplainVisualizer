@@ -61,7 +61,7 @@ export default function DetailsPanel({ node, goToAgent }: { node?: ExecNode | nu
             </div>
 
             {/* JSON Bruto (60%) */}
-            <div className="flex-[0_0_60%] min-h-0 flex flex-col">
+            <div className="flex-[0_0_58%] min-h-0 flex flex-col">
               <div className="text-xs font-semibold mb-1">JSON Bruto</div>
               <Textarea
                 label="JSON Bruto"
@@ -72,10 +72,11 @@ export default function DetailsPanel({ node, goToAgent }: { node?: ExecNode | nu
                 // maxRows={30}
               />
             </div>
-            <div className="flex-[0_0_10%] min-h-0 overflow-auto space-y-3">
+            <div className="flex-[0_0_12%] min-h-0 overflow-auto space-y-3">
               <div className="text-xs font-semibold mb-1">Experimente o agente de SQL</div>
+                <span className="text-sm text-gray-500">É necessário estar conectado na VPN para usar o agente</span>
                 <Button color="primary" onPress={goToAgent} size="md" className="w-full mb-2">
-                Analisar
+                Ir para o agente
               </Button>
             </div>
           </div>
