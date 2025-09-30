@@ -13,7 +13,7 @@ export default function DetailsColumn({ node }: DetailsColumnProps) {
   }
 
   return (
-    <div className="col-span-12 lg:col-span-3 flex flex-col min-h-0">
+    <div className="col-span-12 lg:col-span-3 flex flex-col min-h-0 h-full">
         <DetailsPanel node={node} goToAgent={goToAgent} />
     </div>
   );

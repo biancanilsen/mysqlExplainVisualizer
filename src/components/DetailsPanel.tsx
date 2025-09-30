@@ -35,8 +35,8 @@ export default function DetailsPanel({ node, goToAgent }: { node?: ExecNode | nu
           </p>
         ) : (
           <div className="flex-1 min-h-0 flex flex-col gap-3">
-            {/* Seção de informações (40%) */}
-            <div className="flex-[0_0_20%] min-h-0 overflow-auto space-y-3">
+            {/* Informações do nó (ocupa o restante do espaço disponível) */}
+            <div className="flex-1 min-h-0 overflow-auto space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
                 {badges.map((b, i) => (
                   <Chip
@@ -60,22 +60,24 @@ export default function DetailsPanel({ node, goToAgent }: { node?: ExecNode | nu
               </div>
             </div>
 
-            {/* JSON Bruto (60%) */}
-            <div className="flex-[0_0_58%] min-h-0 flex flex-col">
+            {/* JSON Bruto (40%) - fica logo abaixo das informações */}
+            <div className="flex-[0_0_40%] min-h-0 flex flex-col">
               <div className="text-xs font-semibold mb-1">JSON Bruto</div>
               <Textarea
-                label="JSON Bruto"
+                aria-label="JSON Bruto"
                 placeholder=""
                 value={JSON.stringify(node.raw, null, 2)}
-                className="h-full"
-                classNames={{ input: "h-full resize-none", inputWrapper: "h-full" }}
-                // maxRows={30}
+                disableAutosize
+                className="h-full fill-vert-textarea"
+                classNames={{ base: "h-full", mainWrapper: "h-full", inputWrapper: "h-full", input: "h-full resize-none" }}
               />
             </div>
-            <div className="flex-[0_0_12%] min-h-0 overflow-auto space-y-3">
-              <div className="text-xs font-semibold mb-1">Experimente o agente de SQL</div>
-                <span className="text-sm text-gray-500">É necessário estar conectado na VPN para usar o agente</span>
-                <Button color="primary" onPress={goToAgent} size="md" className="w-full mb-2">
+
+            {/* CTA do agente - abaixo do TextArea, altura automática */}
+            <div className="flex-shrink-0 space-y-2">
+              <div className="text-xs font-semibold">Experimente o agente de SQL</div>
+              <span className="text-sm text-gray-500">É necessário estar conectado na VPN para usar o agente</span>
+              <Button color="primary" onPress={goToAgent} size="md" className="w-full">
                 Ir para o agente
               </Button>
             </div>

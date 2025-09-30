@@ -21,3 +21,42 @@
   fill: #fff !important;
   stroke: #fff !important;
 }
+/* Utility: make HeroUI/NextUI Textarea fill the parent's height */
+.fill-vert-textarea {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.fill-vert-textarea [data-slot="input-wrapper"],
+.fill-vert-textarea .input-wrapper,
+.fill-vert-textarea .relative,
+.fill-vert-textarea .w-full {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+}
+.fill-vert-textarea textarea {
+  height: 100% !important;
+  min-height: 0 !important;
+  resize: none;
+}
+/* Stronger rules to make HeroUI/NextUI Textarea fill parent's height responsively */
+.fill-vert-textarea,
+.fill-vert-textarea [data-slot="base"],
+.fill-vert-textarea [data-slot="inner-wrapper"],
+.fill-vert-textarea [data-slot="input-wrapper"] {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.fill-vert-textarea [data-slot="input-wrapper"] {
+  overflow: hidden;
+}
+
+.fill-vert-textarea textarea {
+  height: 100% !important;
+  min-height: 0 !important;
+  resize: none !important;
+  overflow: auto;
+}
