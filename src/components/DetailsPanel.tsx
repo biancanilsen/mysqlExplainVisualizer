@@ -28,15 +28,15 @@ export default function DetailsPanel({ node, goToAgent }: { node?: ExecNode | nu
       <CardHeader className="pb-0 flex-shrink-0">
         <h3 className="font-semibold">Detalhes do Nó</h3>
       </CardHeader>
-      <CardBody className="pt-3 flex-1 min-h-0 flex flex-col">
+      <CardBody className="pt-3 flex-1 min-h-0 flex flex-col overflow-hidden">
         {!node ? (
           <p className="text-sm text-gray-600 dark:text-gray-300">
             Selecione um nó no diagrama para ver os detalhes.
           </p>
         ) : (
-          <div className="flex-1 min-h-0 flex flex-col gap-3">
+          <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
             {/* Informações do nó (ocupa o restante do espaço disponível) */}
-            <div className="flex-1 min-h-0 overflow-auto space-y-3">
+            <div className="flex-shrink-0 overflow-auto space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
                 {badges.map((b, i) => (
                   <Chip
@@ -60,17 +60,19 @@ export default function DetailsPanel({ node, goToAgent }: { node?: ExecNode | nu
               </div>
             </div>
 
-            {/* JSON Bruto (40%) - fica logo abaixo das informações */}
-            <div className="flex-[0_0_40%] min-h-0 flex flex-col">
+            {/* JSON Bruto - ocupa todo o espaço disponível entre as infos e o CTA */}
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
               <div className="text-xs font-semibold mb-1">JSON Bruto</div>
-              <Textarea
-                aria-label="JSON Bruto"
-                placeholder=""
-                value={JSON.stringify(node.raw, null, 2)}
-                disableAutosize
-                className="h-full fill-vert-textarea"
-                classNames={{ base: "h-full", mainWrapper: "h-full", inputWrapper: "h-full", input: "h-full resize-none" }}
-              />
+              <div className="flex-1 min-h-0">
+                <Textarea
+                  aria-label="JSON Bruto"
+                  placeholder=""
+                  value={JSON.stringify(node.raw, null, 2)}
+                  disableAutosize
+                  className="h-full fill-vert-textarea"
+                  classNames={{ base: "h-full", inputWrapper: "h-full", innerWrapper: "h-full", input: "h-full resize-none" }}
+                />
+              </div>
             </div>
 
             {/* CTA do agente - abaixo do TextArea, altura automática */}
