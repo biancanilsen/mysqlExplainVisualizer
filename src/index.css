@@ -7,3 +7,17 @@
   rx: 16px !important;
   ry: 16px !important;
 }
+/* Make Mermaid flowchart arrows white inside the diagram container */
+.mermaid-container .edgePath .path,
+.mermaid-container .edgePath path,
+.mermaid-container .flowchart-link {
+  stroke: #fff !important;
+}
+
+/* Ensure arrowheads are also white */
+.mermaid-container .arrowheadPath,
+.mermaid-container marker path,
+.mermaid-container svg defs marker path {
+  fill: #fff !important;
+  stroke: #fff !important;
+}
