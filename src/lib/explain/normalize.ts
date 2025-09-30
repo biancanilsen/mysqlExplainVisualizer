@@ -82,11 +82,22 @@ function collectNodes(root: ExecNode | null): ExecNode[] {
 
 export function parseExplainToTree(explain: ExplainJSON): ParseResult {
   __id = 0
+
+  // Custo total estimado do plano (query_cost)
   const totalCost = toNumber(explain.query_block?.cost_info?.query_cost, 0)
-  const root = buildFromNestedLoop(explain.query_block?.nested_loop)
+
+  // 1) Planos com nested_loop (forma mais comum)
+  let root = buildFromNestedLoop(explain.query_block?.nested_loop)
+
+  // 2) Fallback: alguns EXPLAIN simples vêm com "query_block.table" (sem nested_loop)
+  if (!root && explain.query_block?.table) {
+    root = toExecNodeFromTable(explain.query_block.table as TableNode)
+  }
+
+  // Coleta dos nós para visualização/alertas
   const nodes = collectNodes(root)
 
-  // Ensure root reflects total cost if available
+  // Ajusta o custo da raiz para refletir o total, quando aplicável
   if (root && totalCost && totalCost > root.cost) {
     root.cost = totalCost
   }

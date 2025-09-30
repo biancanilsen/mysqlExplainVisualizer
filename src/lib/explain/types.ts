@@ -37,6 +37,7 @@ export interface QueryBlock {
   select_id: number
   cost_info?: CostInfo
   nested_loop?: NodeWrapper[]
+  table?: TableNode
   [key: string]: unknown
 }
 
