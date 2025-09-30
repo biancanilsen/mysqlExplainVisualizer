@@ -15,14 +15,41 @@ export default function DiagramColumn({ graphDef, nodes }: DiagramColumnProps) {
   useEffect(() => {
     if (!graphDef || !containerRef.current) return;
     let cancelled = false;
+
+    // Helper: encontra o contêiner com overflow scroll/auto para preservar/restaurar o scroll
+    const findScrollContainer = (node: HTMLElement | null): HTMLElement | null => {
+      let cur = node?.parentElement;
+      while (cur) {
+        const style = getComputedStyle(cur);
+        const oy = style.overflowY;
+        if (oy === 'auto' || oy === 'scroll') return cur;
+        cur = cur.parentElement as HTMLElement | null;
+      }
+      return null;
+    };
+
     (async () => {
       const el = containerRef.current!;
+      const scroller = findScrollContainer(el);
+      const prevTop = scroller?.scrollTop ?? 0;
+      const prevLeft = scroller?.scrollLeft ?? 0;
+
       el.innerHTML = '';
       try {
         const { svg, bindFunctions } = await mermaid.render(`graph-${Date.now()}`, graphDef);
         if (!cancelled) {
           el.innerHTML = svg;
           bindFunctions?.(el);
+
+          // Restaura a posição de scroll após o re-render do SVG
+          if (scroller) {
+            requestAnimationFrame(() => {
+              if (!cancelled) {
+                scroller.scrollTop = prevTop;
+                scroller.scrollLeft = prevLeft;
+              }
+            });
+          }
         }
       } catch (e) {
         el.innerHTML = '<div class="text-red-600">Falha ao renderizar.</div>';
