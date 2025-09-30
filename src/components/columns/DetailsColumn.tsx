@@ -8,9 +8,13 @@ interface DetailsColumnProps {
 }
 
 export default function DetailsColumn({ node }: DetailsColumnProps) {
+  const goToAgent = () => {
+     window.open('https://mysql-specialist.data.paytrack.com.br/', '_blank');
+  }
+
   return (
     <div className="col-span-12 lg:col-span-3 flex flex-col min-h-0">
-        <DetailsPanel node={node} />
+        <DetailsPanel node={node} goToAgent={goToAgent} />
     </div>
   );
 }
