@@ -55,7 +55,7 @@ export default function AnalysisPanel({ alerts, selectedId, variant = 'standalon
           <li
             key={idx}
             className={[
-              'text-sm leading-5 p-2 rounded',
+              'text-sm leading-5 p-2 rounded-xl',
               highlighted ? 'ring-2 ring-blue-500 border border-blue-300 bg-blue-50 dark:bg-blue-950/30' : ''
             ].join(' ').trim()}
           >

@@ -23,7 +23,6 @@ export default function DiagramColumn({ graphDef, nodes }: DiagramColumnProps) {
         if (!cancelled) {
           el.innerHTML = svg;
           bindFunctions?.(el);
-          // Adicionar tooltips...
         }
       } catch (e) {
         el.innerHTML = '<div class="text-red-600">Falha ao renderizar.</div>';
@@ -41,7 +40,7 @@ export default function DiagramColumn({ graphDef, nodes }: DiagramColumnProps) {
         </CardHeader>
         <CardBody className="flex-1 min-h-0">
           <ScrollShadow className="h-full w-full">
-            <div ref={containerRef} className="mermaid-container flex justify-center" />
+            <div ref={containerRef} className="mermaid-container flex justify-center rounded-xl" />
           </ScrollShadow>
         </CardBody>
       </Card>
