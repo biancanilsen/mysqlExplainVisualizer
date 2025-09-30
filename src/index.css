@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Mermaid node corner radius for "Plano de Execução" diagram */
+.mermaid-container .node rect,
+.mermaid-container .cluster rect {
+  rx: 16px !important;
+  ry: 16px !important;
+}
