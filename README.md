@@ -136,9 +136,6 @@ Pull Requests são bem-vindos. Recomendações:
 - Adicionar testes (quando aplicável) e atualizar documentação.
 - Seguir o estilo do projeto (Tailwind e componentes HeroUI).
 
-## Licença
-Este projeto não define uma licença específica. Caso necessário, adicione uma licença em LICENSE.
-
 ## Referências
 - Documentação do MySQL 8.4 — EXPLAIN: https://dev.mysql.com/doc/refman/8.4/en/explain.html
 - Mermaid: https://mermaid.js.org/
