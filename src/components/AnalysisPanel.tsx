@@ -41,7 +41,7 @@ export default function AnalysisPanel({ alerts, selectedId, variant = 'standalon
         ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200'
         : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200'
     return (
-      <span className={`text-xs px-2 py-0.5 rounded ${color}`}>
+      <span className={`inline-flex items-center justify-center w-full h-6 rounded text-xs font-semibold leading-none ${color}`}>
         {a.type}
       </span>
     )
@@ -59,9 +59,11 @@ export default function AnalysisPanel({ alerts, selectedId, variant = 'standalon
               highlighted ? 'ring-2 ring-blue-500 border border-blue-300 bg-blue-50 dark:bg-blue-950/30' : ''
             ].join(' ').trim()}
           >
-            <div className="flex items-start gap-2">
-              {badge(a)}
-              <p>{a.message}</p>
+            <div className="grid grid-cols-[7rem_1fr] gap-2 items-center">
+              <div className="shrink-0 w-28 h-full flex items-center justify-center">
+                {badge(a)}
+              </div>
+              <p className="min-w-0">{a.message}</p>
             </div>
           </li>
         )
