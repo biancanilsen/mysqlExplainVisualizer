@@ -1,70 +1,146 @@
-# Getting Started with Create React App
+# MySQL Explain Visualizer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Visualizador interativo para EXPLAIN FORMAT=JSON do MySQL 8.4. Cole o JSON do plano, visualize o pipeline em um diagrama Mermaid, inspecione detalhes por nó e receba análises e sugestões fundamentadas na documentação oficial do MySQL.
 
-## Available Scripts
+Tecnologias: React 19, HeroUI/NextUI, Mermaid 11, TailwindCSS.
 
-In the project directory, you can run:
+- Código-chave: [ts.parseExplainToTree()](src/lib/explain/normalize.ts:83), [ts.buildMermaid()](src/lib/mermaid/buildGraph.ts:31), [ts.generateAlerts()](src/lib/explain/heuristics.ts:4), [ts.ExecNode](src/lib/explain/types.ts:47)
 
-### `npm start`
+## Sumário
+- Visão Geral
+- Escopo e Suporte
+- Requisitos
+- Instalação e Execução
+- Como Usar
+- Como Funciona (pipeline)
+- Regras de Heurísticas (resumo)
+- Estrutura do Projeto
+- Scripts NPM
+- Customização
+- Roadmap
+- Contribuição
+- Licença
+- Referências
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Visão Geral
+O projeto transforma a saída do MySQL EXPLAIN FORMAT=JSON em uma visualização clara do plano de execução. Ele:
+- Gera um diagrama vertical (top-down) com Mermaid, com nós coloridos por custo relativo.
+- Exibe métricas por nó: custo, linhas lidas e produzidas.
+- Permite clicar nos nós para ver detalhes e destaque correspondente na lista de análises.
+- Produz alertas e sugestões baseados na documentação oficial do MySQL 8.4.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Colunas da interface:
+- Entrada: textarea para colar o JSON e botão “Analisar”.
+- Plano de Execução: diagrama Mermaid com cartões arredondados e setas brancas.
+- Detalhes do Nó: informações do nó, JSON bruto e CTA “Experimente o agente de SQL”.
 
-### `npm test`
+## Escopo e Suporte
+- Suportado: MySQL 8.4 (EXPLAIN FORMAT=JSON).
+- Não suportado diretamente (exige adaptadores): PostgreSQL, SQL Server, Oracle, etc.
+  - Possível no futuro via normalizadores específicos que convertam o formato nativo para [ts.ExecNode](src/lib/explain/types.ts:47).
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Requisitos
+- Node.js LTS (>= 18)
+- npm (ou yarn/pnpm)
 
-### `npm run build`
+## Instalação e Execução
+```bash
+npm install
+npm start
+```
+A aplicação roda em http://localhost:3000.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Build de produção:
+```bash
+npm run build
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Como Usar
+1) No painel “EXPLAIN FORMAT=JSON”, cole o JSON completo do EXPLAIN (MySQL 8.4).  
+2) Clique em “Analisar”.  
+3) Explore o diagrama e clique em nós para ver detalhes e alertas relacionados.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Observação: os valores nos rótulos das arestas representam o volume estimado de linhas que flui entre operadores (Linhas Produzidas; fallback para Linhas Lidas).
 
-### `npm run eject`
+## Como Funciona (pipeline)
+- Normalização: [ts.parseExplainToTree()](src/lib/explain/normalize.ts:83) converte o JSON do MySQL para o modelo interno [ts.ExecNode](src/lib/explain/types.ts:47).
+- Diagrama: [ts.buildMermaid()](src/lib/mermaid/buildGraph.ts:31) monta a definição Mermaid com classes visuais por custo. O rótulo do nó é montado por [ts.generateNodeText()](src/lib/mermaid/buildGraph.ts:17) e tipos de acesso traduzidos por [ts.humanAccess()](src/lib/mermaid/buildGraph.ts:3).
+- Heurísticas: [ts.generateAlerts()](src/lib/explain/heuristics.ts:4) percorre os nós e retorna sugestões/alertas com severidade e código.
+- UI e estado: [tsx.ExplainVisualizer()](src/components/ExplainVisualizer.tsx:7) organiza as colunas e estados; o clique no diagrama atualiza o nó selecionado.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Documentação técnica do pipeline: [docs/EXPLAIN-ANALYSIS.md](docs/EXPLAIN-ANALYSIS.md)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Regras de Heurísticas (resumo)
+As regras abaixo são derivadas da documentação oficial do MySQL 8.4 (EXPLAIN). Os limiares adotados são práticos e podem ser ajustados em [ts.generateAlerts()](src/lib/explain/heuristics.ts:4). A versão detalhada está em [docs/EXPLAIN-RULES.md](docs/EXPLAIN-RULES.md).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- FULL_TABLE_SCAN — access_type = ALL; muitas linhas examinadas
+  - Severidade: alta
+  - Ação: criar/ajustar índices para predicados de WHERE/JOIN; garantir seletividade.
+- FULL_INDEX_SCAN — access_type = index (varredura completa do índice)
+  - Severidade: média
+  - Ação: melhorar predicados; revisar ordem de colunas em índices compostos; reduzir colunas projetadas quando possível.
+- LOW_SELECTIVITY — filtered baixo (< 10%)
+  - Severidade: média
+  - Ação: melhorar seletividade de filtros e índices para reduzir linhas lidas/descartadas.
+- FILE_SORT — Using filesort
+  - Severidade: média
+  - Ação: cobrir ORDER BY com índice apropriado, evitando ordenação em disco.
+- TEMPORARY_TABLE — Using temporary
+  - Severidade: média
+  - Ação: comum em GROUP BY/UNION; revisar índices e reescritas para minimizar materializações.
+- JOIN_BUFFER — Using join buffer
+  - Severidade: média
+  - Ação: criar/ajustar índices nas colunas de junção; reavaliar ordem de joins.
+- COVERING_INDEX — Using index (informativo)
+  - Severidade: baixa
+  - Ação: positivo; quando possível, projetar índices “covering” para consultas críticas.
+- UNUSED_INDEX — possible_keys definidos mas key não escolhido
+  - Severidade: baixa
+  - Ação: verificar funções em colunas, tipos/colations, estatísticas e ordem de colunas.
+- BOTTLENECK — nó(s) com maior custo relativo
+  - Severidade: alta (informativo)
+  - Ação: priorizar otimizações no maior contribuinte de custo.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Mais detalhes (condições e mensagens completas): [docs/EXPLAIN-RULES.md](docs/EXPLAIN-RULES.md)
 
-## Learn More
+## Estrutura do Projeto
+- Visualização: [ts.buildMermaid()](src/lib/mermaid/buildGraph.ts:31)
+- Normalização: [ts.parseExplainToTree()](src/lib/explain/normalize.ts:83)
+- Heurísticas: [ts.generateAlerts()](src/lib/explain/heuristics.ts:4)
+- Tipos: [ts.ExplainJSON](src/lib/explain/types.ts:43), [ts.ExecNode](src/lib/explain/types.ts:47)
+- Componentes principais:
+  - Colunas: [tsx.InputColumn()](src/components/columns/InputColumn.tsx:13), [tsx.DiagramColumn()](src/components/columns/DiagramColumn.tsx:12), [tsx.DetailsColumn()](src/components/columns/DetailsColumn.tsx:10)
+  - Painéis: [tsx.AnalysisPanel()](src/components/AnalysisPanel.tsx:11), [tsx.DetailsPanel()](src/components/DetailsPanel.tsx:18)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Scripts NPM
+- start: inicia o servidor de desenvolvimento
+- build: gera o build de produção
+- test: executa a suíte de testes (quando houver)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Customização
+- Limiar das regras
+  - Ajuste diretamente em [ts.generateAlerts()](src/lib/explain/heuristics.ts:4).
+- Aparência do diagrama
+  - CSS em [src/index.css](src/index.css) controla cantos arredondados dos nós e cor das setas/ponteiros.
+- Tradução/labels de operações
+  - Em [ts.humanAccess()](src/lib/mermaid/buildGraph.ts:3).
 
-### Code Splitting
+## Roadmap
+- Adaptadores para outros SGBDs (ex.: PostgreSQL EXPLAIN JSON).
+- Configuração externa dos limiares de heurística.
+- Novas heurísticas (covering index avançado, cardinalidades anômalas, etc.).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Contribuição
+Pull Requests são bem-vindos. Recomendações:
+- Abrir issue descrevendo motivação/escopo.
+- Adicionar testes (quando aplicável) e atualizar documentação.
+- Seguir o estilo do projeto (Tailwind e componentes HeroUI).
 
-### Analyzing the Bundle Size
+## Licença
+Este projeto não define uma licença específica. Caso necessário, adicione uma licença em LICENSE.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Referências
+- Documentação do MySQL 8.4 — EXPLAIN: https://dev.mysql.com/doc/refman/8.4/en/explain.html
+- Mermaid: https://mermaid.js.org/
+- HeroUI/NextUI: https://www.heroui.com/
+- TailwindCSS: https://tailwindcss.com/
