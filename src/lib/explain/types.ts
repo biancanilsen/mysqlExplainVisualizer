@@ -66,6 +66,7 @@ export type AlertCode =
   | 'JOIN_BUFFER'
   | 'COVERING_INDEX'
   | 'UNUSED_INDEX'
+  | 'FUNCTION_SUPPRESSING_INDEX'
   | 'BOTTLENECK'
 
 export interface Alert {

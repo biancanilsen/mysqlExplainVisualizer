@@ -147,6 +147,43 @@ export function generateAlerts(explain: ExplainJSON, nodes: ExecNode[], totalCos
     }
   }
 
+  // 8.1) FUNCTION SUPPRESSING INDEX — attached_condition com função sobre coluna
+  for (const n of nodes) {
+    const raw = n.raw as Record<string, unknown> | undefined
+    const attached = (raw as any)?.attached_condition as string | undefined
+    if (typeof attached === 'string' && attached.length > 0) {
+      // Heurística: detectar função(s) aplicadas a colunas na condição
+      const hasSpecificFunc =
+        /\b(?:upper|lower|date|cast|convert|coalesce|ifnull|substring|substr|trim|ltrim|rtrim|concat|replace|left|right|abs|floor|ceil|round|year|month|day|from_unixtime|unix_timestamp)\s*\(/i.test(attached)
+      const hasGenericFunc = /[a-z_][a-z0-9_]*\s*\(/i.test(attached) // fallback genérico
+      const mentionsColumn =
+        /`[^`]+`\.`[^`]+`|\b[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*\b/.test(attached)
+
+      const possible = Array.isArray((raw as any)?.possible_keys)
+        ? (((raw as any)!.possible_keys) as string[])
+        : undefined
+      const chosen = (((raw as any)?.key ?? undefined) as string | undefined)
+      const access = (n.accessType ?? '').toUpperCase()
+      const noIndex = !chosen || access === 'ALL' || access === 'INDEX'
+
+      // Dispara quando há função sobre coluna e o índice não foi usado/efetivo
+      if ((mentionsColumn && (hasSpecificFunc || hasGenericFunc)) && (noIndex || (possible && possible.length > 0 && !chosen))) {
+        const snippet = attached.length > 160 ? attached.slice(0, 160) + '…' : attached
+        alerts.push({
+          type: 'ALERTA',
+          code: 'FUNCTION_SUPPRESSING_INDEX',
+          severity: 'medium',
+          nodeId: n.id,
+          message:
+            'Condição com função aplicada à coluna pode impedir o uso do índice (attached_condition). ' +
+            'Evite funções no lado da coluna; normalize valores, reescreva o predicado para comparar a coluna crua, ' +
+            'ou utilize coluna gerada indexada para a expressão. ' +
+            `Exemplo: ${snippet}`,
+        })
+      }
+    }
+  }
+
   // 9) BOTTLENECK — nó(s) com maior custo relativo
   const maxCost = nodes.length ? Math.max(...nodes.map((n) => n.cost)) : 0
   const denom = totalCost || maxCost || 1
