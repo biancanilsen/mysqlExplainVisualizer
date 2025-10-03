@@ -71,6 +71,7 @@ export default function DetailsPanel({ node, goToAgent }: { node?: ExecNode | nu
                   disableAutosize
                   className="h-full fill-vert-textarea"
                   classNames={{ base: "h-full", inputWrapper: "h-full", innerWrapper: "h-full", input: "h-full resize-none" }}
+                  disabled={true}
                 />
               </div>
             </div>

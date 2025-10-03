@@ -22,6 +22,8 @@ export function generateAlerts(nodes: ExecNode[], totalCost: number): Alert[] {
           'Crie/ajuste índices para as colunas usadas em WHERE/JOIN e garanta seletividade.',
       })
     }
+    console.log("isAll: ", isAll);
+    console.log("n", n);
   }
 
   // 2) FULL INDEX SCAN (access_type = index)

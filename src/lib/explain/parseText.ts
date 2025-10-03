@@ -117,6 +117,9 @@ function classifyAccess(opText: string): AccessKind {
   if (/^table\s+lookup\s+on\b/i.test(s)) {
     return { accessType: 'ref', table: extractTable(s), key: extractKeyName(s) }
   }
+  if (/^covering\s+index\s+lookup\s+on\b/i.test(s)) {
+    return { accessType: 'ref', table: extractTable(s), key: extractKeyName(s) }
+  }
   if (/^index\s+lookup\s+on\b/i.test(s)) {
     return { accessType: 'ref', table: extractTable(s), key: extractKeyName(s) }
   }
