@@ -1,8 +1,8 @@
-import type { Alert, ExplainJSON, ExecNode } from './types'
+import type { Alert, ExecNode } from './types'
 import { toNumber } from './types'
 
 
-export function generateAlerts(explain: ExplainJSON, nodes: ExecNode[], totalCost: number): Alert[] {
+export function generateAlerts(nodes: ExecNode[], totalCost: number): Alert[] {
   const alerts: Alert[] = []
 
   // 1) FULL TABLE SCAN (access_type = ALL)

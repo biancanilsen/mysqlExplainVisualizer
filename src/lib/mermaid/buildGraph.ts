@@ -39,7 +39,7 @@ export function buildMermaid(root: ExecNode | null, nodes: ExecNode[], selectedI
   lines.push('%%{init: { "theme": "base", "themeVariables": { "fontSize": "13px" } } }%%')
 
   if (!root || nodes.length === 0) {
-    lines.push('empty["Cole o JSON do EXPLAIN e clique em Analisar"]')
+    lines.push('empty["Cole o EXPLAIN ANALYZE (texto) ou EXPLAIN FORMAT=JSON e clique em Analisar"]')
     return lines.join('\n')
   }
 

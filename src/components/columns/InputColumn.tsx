@@ -20,11 +20,11 @@ export default function InputColumn({ input, setInput, analyze, alerts, selected
         <CardBody className="flex-1 min-h-0 grid grid-rows-[minmax(0,1fr)_minmax(0,1fr)] gap-3 overflow-hidden">
           {/* Textarea ocupa 50% da coluna */}
           <div className="min-h-0 flex flex-col overflow-hidden">
-            <div className="text-xs font-semibold mb-1">EXPLAIN FORMAT=JSON</div>
+            <div className="text-xs font-semibold mb-1">EXPLAIN ANALYZE (texto) ou EXPLAIN FORMAT=JSON</div>
             <div className="flex-1 min-h-0">
               <Textarea
                 aria-label="EXPLAIN FORMAT=JSON"
-                placeholder="Cole aqui o EXPLAIN ANALISE JSON..."
+                placeholder="Cole aqui o EXPLAIN ANALYZE (texto) ou o EXPLAIN FORMAT=JSON..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disableAutosize

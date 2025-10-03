@@ -1,23 +1,24 @@
-# Documentação da Análise do EXPLAIN FORMAT=JSON
+# Documentação da Análise do EXPLAIN (FORMAT=JSON e ANALYZE texto)
 
 Este documento descreve como o projeto processa e analisa a saída do MySQL `EXPLAIN FORMAT=JSON`, desde a leitura do JSON até a visualização e geração de alertas/sugestões de otimização.
 
-- Função principal de análise: [ts.parseExplainToTree()](src/lib/explain/normalize.ts:83)
+- Normalizadores: [ts.parseExplainToTree()](src/lib/explain/normalize.ts:83) e [ts.parseExplainAnalyzeText()](src/lib/explain/parseText.ts:130)
 - Construção do diagrama Mermaid: [ts.buildMermaid()](src/lib/mermaid/buildGraph.ts:31)
-- Heurísticas de alertas/sugestões: [ts.generateAlerts()](src/lib/explain/heuristics.ts:4)
-- Componente de interface (visualização e ações): [tsx.ExplainVisualizer()](src/components/ExplainVisualizer.tsx:66) e ação [tsx.analyze()](src/components/ExplainVisualizer.tsx:152)
+- Heurísticas de alertas/sugestões: [ts.generateAlerts()](src/lib/explain/heuristics.ts:5)
+- Auto-detector e ação de análise: [ts.analyze()](src/hooks/useExplainAnalysis.ts:26)
 
 ---
 
 ## Visão Geral do Pipeline
 
-1) Entrada: JSON completo do `EXPLAIN FORMAT=JSON` (MySQL).
+1) Entrada: JSON do `EXPLAIN FORMAT=JSON` ou texto do `EXPLAIN ANALYZE` (MySQL).
 2) Normalização: conversão em uma árvore de execução (`ExecNode`) com custos e métricas.
-   - [ts.parseExplainToTree()](src/lib/explain/normalize.ts:83)
+   - JSON: [ts.parseExplainToTree()](src/lib/explain/normalize.ts:83)
+   - Texto: [ts.parseExplainAnalyzeText()](src/lib/explain/parseText.ts:130)
 3) Visualização: geração de um diagrama (Mermaid flowchart) com nós e arestas.
    - [ts.buildMermaid()](src/lib/mermaid/buildGraph.ts:31)
 4) Heurísticas: varredura dos nós para gerar alertas/sugestões.
-   - [ts.generateAlerts()](src/lib/explain/heuristics.ts:4)
+   - [ts.generateAlerts()](src/lib/explain/heuristics.ts:5)
 5) UI: exibe o diagrama, a análise e os detalhes do nó selecionado.
    - [tsx.ExplainVisualizer()](src/components/ExplainVisualizer.tsx:66)
    - [tsx.AnalysisPanel()](src/components/AnalysisPanel.tsx:11)
@@ -29,15 +30,22 @@ Este documento descreve como o projeto processa e analisa a saída do MySQL `EXP
 
 ### 1. Entrada do EXPLAIN
 
-- O usuário cola o JSON na coluna “EXPLAIN FORMAT=JSON”.
+- O usuário pode colar o EXPLAIN ANALYZE (texto) ou o JSON de `EXPLAIN FORMAT=JSON` na coluna de entrada.
 - O projeto fornece um exemplo de JSON para testes:
-  - Constante: `SAMPLE_JSON` em [tsx.ExplainVisualizer()](src/components/ExplainVisualizer.tsx:18)
-- Ao clicar em “Analisar”, é executada a função [tsx.analyze()](src/components/ExplainVisualizer.tsx:152):
-  - Faz `JSON.parse(input)`.
-  - Normaliza via [ts.parseExplainToTree()](src/lib/explain/normalize.ts:83).
-  - Gera o diagrama via [ts.buildMermaid()](src/lib/mermaid/buildGraph.ts:31).
-  - Gera alertas via [ts.generateAlerts()](src/lib/explain/heuristics.ts:4).
+  - Constante: [ts.jsonExample](src/utils/jsonExemple.ts:1)
+- Ao clicar em “Analisar”, é executada a função [ts.analyze()](src/hooks/useExplainAnalysis.ts:26):
+  - Auto-detecção: se o texto começar com “{” ou “[”, tenta JSON → [ts.parseExplainToTree()](src/lib/explain/normalize.ts:83); caso contrário, usa [ts.parseExplainAnalyzeText()](src/lib/explain/parseText.ts:130).
+  - Visualização via [ts.buildMermaid()](src/lib/mermaid/buildGraph.ts:31).
+  - Geração de alertas via [ts.generateAlerts()](src/lib/explain/heuristics.ts:5).
   - Atualiza estados da interface (root, nodes, totalCost, selectedId, graphDef, alerts).
+
+Exemplo de EXPLAIN ANALYZE (texto) aceito:
+```text
+-> Table scan on c (cost=418.35 rows=150)
+-> Index lookup on p using fk_pedidos_clientes (cost=1138.35 rows=600)
+-> Index lookup on i using fk_itens_pedido (cost=12181.93 rows=1200)
+-> Unique index lookup on prod using PRIMARY (cost=12781.93 rows=1200)
+```
 
 ### 2. Normalização (parseExplainToTree)
 

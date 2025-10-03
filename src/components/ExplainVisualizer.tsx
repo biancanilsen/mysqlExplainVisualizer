@@ -11,7 +11,10 @@ export default function ExplainVisualizer() {
     graphDef,
     alerts,
     nodes,
-    totalCost,
+    // totalCost is still used internally for alerts/diagram, but header shows KPIs below
+    queryCost,
+    actualTimeMs,
+    totalLoops,
     selectedId,
     selectedNode,
     analyze,
@@ -22,8 +25,16 @@ export default function ExplainVisualizer() {
       <div className="flex-shrink-0 p-4 border-b border-gray-700">
         <div className="flex items-center justify-between w-full mx-auto">
           <h1 className="text-2xl font-bold">MySQL Explain Visualizer</h1>
-          <div className="text-sm text-gray-300">
-            Custo total estimado: <span className="font-mono">{totalCost.toFixed(2)}</span>
+          <div className="text-sm text-gray-300 flex flex-wrap gap-4">
+            <span>
+              Query Cost: <span className="font-mono">{queryCost.toFixed(2)}</span>
+            </span>
+            <span>
+              Actual Time: <span className="font-mono">{actualTimeMs.toLocaleString()} ms</span>
+            </span>
+            <span>
+              Loops totais: <span className="font-mono">{totalLoops.toLocaleString()}</span>
+            </span>
           </div>
         </div>
       </div>
